@@ -1,0 +1,19 @@
+| lines leftList rightList |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_one.txt'.
+leftList := OrderedCollection new.
+rightList := OrderedCollection new.
+lines do: [:l | | tokens | 
+	tokens := l substrings.
+	(tokens size > 1) ifTrue: [
+		leftList add: (tokens at: 1) asInteger.
+		rightList add: (tokens at: 2) asInteger.
+		].
+	].
+leftList sort.
+rightList sort.
+((1 to: leftList size) collect: [:i | | l r |
+	l := (leftList at: i) min: (rightList at: i).
+	r := (leftList at: i) max: (rightList at: i).
+	Transcript show: 'l: ', l, ' r: ', r, 'd: ', (r - 1); cr.
+	r - l
+	]) inject: 0 into: [:sum :each | sum + each]

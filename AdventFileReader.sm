@@ -1,0 +1,18 @@
+Object subclass: #AdventFileReader
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventHelpers'
+
+AdventFileReader>>readLines: fileName
+	| fileStream line list |
+	fileStream := FileDirectory default readOnlyFileNamed: fileName.
+	fileStream ascii.
+	list := Bag new.
+	[fileStream atEnd]
+		whileFalse:
+			[line := fileStream nextLine.
+				list add: line.
+			].
+	fileStream close.
+	^ list

@@ -1,0 +1,17 @@
+| lines leftList rightList setDict total |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_one.txt'.
+leftList := Dictionary new.
+rightList := Dictionary new.
+setDict := [:d :v | d at: v put: (d at: v ifAbsent: [0]) + 1].
+lines do: [:l | | tokens | 
+	tokens := l substrings.
+	(tokens size > 1) ifTrue: [
+		setDict value: leftList value: (tokens at: 1) asInteger.
+		setDict value: rightList value: (tokens at: 2) asInteger.
+		].
+	].
+total := 0.
+leftList keysAndValuesDo: [:k :v | 
+	"Transcript show: 'k: ', k, ' v: ', v; cr."
+	total := total + ((rightList at: k ifAbsent: [0]) * k * v) ].
+total
