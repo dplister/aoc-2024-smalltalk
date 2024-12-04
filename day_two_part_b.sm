@@ -1,0 +1,7 @@
+| sets reports validator |
+validator := (ReportErrorCorrector new).
+sets := (AdventFileReader readLines: 'adventofcode/2024/day_two.txt')
+	collect: [:line | line substrings collect: [:i | i asInteger]]
+	thenSelect: [:ls | ls size > 0].
+reports :=  sets collect: [:s | validator findValidReport: s].
+(reports select: [:r | r]) size

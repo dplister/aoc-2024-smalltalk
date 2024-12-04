@@ -1,0 +1,56 @@
+Object subclass: #Report
+	instanceVariableNames: 'sequence direction'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Advent-2024'
+
+continuesDirection: pair
+	"determines if the pair of numbers continues in the direction of the report"
+	| nextDir |
+	nextDir := self getDirection: pair.
+	"Transcript show: 'pair: ', pair, ' dir: ', direction, ' next: ', nextDir; cr."
+	direction ifNil: [ direction := nextDir. ^ true].
+	direction = #equal ifTrue: [ direction := nextDir. ^ true].
+	nextDir = #equal ifTrue: [^ true].
+	nextDir = direction ifTrue: [^ true].
+	^ false.
+	
+distance: pair minLimit: minLimit maxLimit: maxLimit
+	"determines if the pair of numbers is within the specified limit"
+	| mn mx t |
+	mn := (pair at: 1) min: (pair at: 2).
+	mx := (pair at: 1) max: (pair at: 2).
+	t := mx - mn.
+	^ (t >= minLimit) & (t <= maxLimit)
+
+getDirection: pair
+	"determines the direction of the two numbers provided"
+	(pair at: 1) < (pair at: 2) ifTrue: [^ #ascending].
+	(pair at: 1) > (pair at: 2) ifTrue: [^ #descending].
+	^ #equal
+
+initialize: numbers
+	super initialize.
+	sequence := numbers asOrderedCollection
+
+printString
+	"outputs the sequence of numbers contained within the report"
+	| str |
+	str := ''.
+	sequence do: [ :s | str := str , s , ', '].
+	str size > 0 ifTrue: [ str := str truncateTo: (str size - 2)]. "remove last comma"
+	^ str 
+
+sequenceInOrder: limit
+	"determines if the sequence is in order and each pair is within the limit"
+	(2 to: (sequence size)) 
+	detect: [:i || a b r d | 
+		a := sequence at: (i - 1).
+		b := sequence at: i.
+		r := self continuesDirection: {a . b}.
+		d := self distance: {a . b} minLimit: 1 maxLimit: limit.
+		"Transcript show: 'a: ', a, ' b: ', b, ' result: ', r, ' distance: ', d; cr."
+		(r & d) not
+	] 
+	ifFound: [:v | ^ false]
+	ifNone: [^ true].

@@ -1,0 +1,8 @@
+| sets reports |
+sets := (AdventFileReader readLines: 'adventofcode/2024/day_two.txt')
+	collect: [:line | line substrings collect: [:i | i asInteger]]
+	thenSelect: [:ls | ls size > 0].
+reports :=  sets collect: [:s | (Report new) initialize: s].
+reports := reports select: [:r | r sequenceInOrder: 3].
+reports size
+

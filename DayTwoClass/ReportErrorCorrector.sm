@@ -1,0 +1,33 @@
+Object subclass: #ReportErrorCorrector
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Advent-2024'
+
+findValidReport: levels
+	"determines if there is a valid report amongst the set of values"
+	| r |
+	r := Report new initialize: levels.
+	(r sequenceInOrder: 3) ifTrue: [^ true].
+	(1 to: (levels size)) 
+		detect: [:l || tr ss b |
+			ss :=  (self subsequence: levels withoutIndex: l).
+			tr := (Report new initialize: ss).
+			b := tr sequenceInOrder: 3.
+			"Transcript show: 'ss: ' , ss , ' tr: ' , tr , ' b: ' , b; cr."
+			b
+		]
+		ifFound: [:v | ^ true]
+		ifNone: [^ false].
+
+subsequence: seq withoutIndex: index
+	"creates a new sequence with the missing item removed"
+	| ls |
+	ls := OrderedCollection new.
+	(index > 1) ifTrue: [
+		ls addAll: (seq copyFrom: 1 to: (index - 1))
+	].
+	(index < (seq size)) ifTrue: [
+		ls addAll: (seq copyFrom: (index + 1) to: (seq size))
+	].
+	^ ls
