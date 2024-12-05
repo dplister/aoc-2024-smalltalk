@@ -8,7 +8,7 @@ AdventFileReader>>readLines: fileName
 	| fileStream line list |
 	fileStream := FileDirectory default readOnlyFileNamed: fileName.
 	fileStream ascii.
-	list := Bag new.
+	list := OrderedCollection new.
 	[fileStream atEnd]
 		whileFalse:
 			[line := fileStream nextLine.
