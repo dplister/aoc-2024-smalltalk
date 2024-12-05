@@ -1,0 +1,10 @@
+| lines rlx rnx inp muls |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_three.txt'.
+inp := lines inject: '' into: [:acc :l | acc , l]. "concat lines together" 
+rlx := 'mul\([0-9]+,[0-9]+\)' asRegex.
+rnx := '([0-9]+)' asRegex.
+muls := rlx matchesIn: inp 
+	collect: [:m | (rnx matchesIn: m)
+		inject: 1 into: [:acc :n | (n asInteger) * acc ]
+	].
+muls inject: 0 into: [:acc :n | n + acc]
