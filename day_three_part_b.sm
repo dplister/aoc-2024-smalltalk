@@ -1,0 +1,23 @@
+| lines rlx rnx inp muls flip |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_three.txt'.
+inp := lines inject: '' into: [:acc :l | acc , l]. "concat lines together"
+rlx := 'mul\([0-9]+,[0-9]+\)|don''t\(\)|do\(\)' asRegex.
+rnx := '([0-9]+)' asRegex.
+rpref := '^do' asRegex.
+flip := true.
+" translates each token into numerical value - 0's will be in the places for do / don't
+  instructions, 0's will also appear in cases where flip is off " 
+muls := rlx matchesIn: inp 
+	collect: [:m | 
+		"is either enable/disable or math"
+		(rpref matchesPrefix: m) ifTrue: [
+			flip := m = 'do()'.
+			0
+		] ifFalse: [
+			flip ifTrue: [
+				(rnx matchesIn: m)
+				inject: 1 into: [:acc :n | (n asInteger) * acc ]		
+			] ifFalse: [ 0 ]
+		]
+	].
+muls inject: 0 into: [:acc :m | acc + m]
