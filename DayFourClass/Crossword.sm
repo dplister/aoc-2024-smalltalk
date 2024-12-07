@@ -1,0 +1,110 @@
+Object subclass: #Crossword
+	instanceVariableNames: 'width height contents'
+	classVariableNames: 'Directions'
+	poolDictionaries: ''
+	category: 'Advent-2024'
+
+Crossword class>>initialize
+	super initialize.
+	self initializeDirections
+
+Crossword class>>initializeDirections
+	Directions := Dictionary newFrom: { 
+		#N -> (0@(-1)) . 
+		#NE -> (1@(-1)) . 
+		#E -> (1@0) .
+		#SE -> (1@1) .
+		#S -> (0@1) .
+		#SW -> ((-1)@1) .
+		#W -> ((-1)@0) .
+		#NW -> ((-1)@(-1)) 
+	}
+
+Crossword>>collectDirs: dirs pos: p
+	"retrieves the set of points in the directions listed oriented from p"
+	^ dirs collect: [:d | | dr r |
+		dr := Directions at: d.
+		r := p + dr.
+		"Transcript show: 'd: ', d, ' dr: ', dr; cr."
+		((r x between: 1 and: width)
+		and: [(r y between: 1 and: height)])
+		ifTrue: [
+			contents at: r x at: r y
+		] ifFalse: [
+			nil
+		]
+	] thenSelect: [:d | d notNil]
+
+Crossword>>findCross: hinge surroundedBy: letters
+	"finds a cross pattern based on a center letter and the expected set surrounding it"
+	| positions ls |
+	positions := OrderedCollection new.
+	ls := letters sort.
+	(1 to: height) do: [:y |
+		(1 to: width) do: [:x |
+			(contents at: x at: y) = hinge ifTrue: [
+				(((self collectDirs: { #NW . #SE } pos: (x@y)) sort = letters)
+				and: [(self collectDirs: { #NE . #SW } pos: (x@y)) sort = letters]) ifTrue: [
+					positions add: (x@y)
+				]
+			]
+		]
+	].
+	^ positions
+
+Crossword>>findMatches: letters
+	"finds all matches for the set of letters provided"
+	| positions |
+	positions := OrderedCollection new.
+	(1 to: height) do: [:y |
+		(1 to: width) do: [:x |
+			Directions 
+				do: [:d | | res | 
+					res := (self start: x@y project: d value length: letters size).
+					res = letters 
+						ifTrue: [ positions add: { (x@y) . d }] 
+				]
+		]
+	].
+	^ positions
+
+Crossword>>initialize: lines
+	"creates a crossword from the lines of characters"
+	self assert: (lines size > 0).
+	width := (lines at: 1) size.
+	height := lines size.
+	contents := Matrix new: (width max: height).
+	(1 to: height) do: [:y || line |
+		line := lines at: y.
+		(1 to: width) do: [:x |
+			contents at: x at: y put: (line at: x)
+		]
+	].
+
+Crossword>>printString
+	| str |
+	str := ''.
+	(1 to: height) do: [:y | 
+		(1 to: width) do: [:x |
+			str := str , (contents at: x at: y)
+		].
+		str := str , (Character cr asString)
+	].
+	^ str
+
+Crossword>>start: s project: p length: len
+	"collects the sequence of characters along projection line; 
+	 shortcircuits empty if there is insufficient cells along the projected line"
+
+	"ensure x and end x are within bounds"
+	((s x between: 1 and: width) and: [
+		((s x + (p x * (len - 1))) between: 1 and: width)
+	]) ifFalse: [^ nil].
+	((s y between: 1 and: height) and: [
+		((s y + (p y * (len - 1))) between: 1 and: height)
+	]) ifFalse: [^ nil].
+	"projection will reach; collect sequence"
+	^ (0 to: (len - 1)) collect: [:c |
+		 (contents at: (s x + (c * p x)) at: (s y + (c * p y)))
+	]
+

@@ -1,0 +1,5 @@
+| cs lines |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_four.txt'.
+cs := Crossword new.
+cs initialize: lines.
+(cs findMatches: { $X . $M . $A . $S }) size
