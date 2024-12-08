@@ -1,0 +1,83 @@
+Object subclass: #ManualVerifier
+	instanceVariableNames: 'rules'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Advent-2024'
+
+ManualVerifier>>fixUpdate: line
+	"reorders the update to meet rules requirements"
+	| ups |
+	ups := self parseUpdate: line.
+	self sortUpdate: ups.
+	^ ups at: (((ups size) / 2) + 1)
+
+ManualVerifier>>initialize: lines
+	super initialize.
+	rules := self parseRules: lines
+
+ManualVerifier>>order: a compareTo: b
+	"determines if the a is less than or equal to b based on the rules"
+	"if a has a ruleset that contains b -> a comes before b"
+	(self page: a isLeftOf: b) ifTrue: [
+		"Transcript show: 'a: ' , a , ' b: ' , b , ' a left of b';cr."
+		^ true	
+	].
+	"if b has a ruleset that contains a -> b comes before a"
+	(self page: b isLeftOf: a) ifTrue: [
+		"Transcript show: 'a: ' , a , ' b: ' , b , ' b left of a';cr."
+		^ false
+	].
+	"else return true - no rule to determine to position (effectively equal)"
+	"Transcript show: 'a: ' , a , ' b: ' , b , ' no rule'; cr."
+	^ true
+
+ManualVerifier>>page: p isLeftOf: target
+	"determines if the page p should be ordered to the left of target"
+	| rs |
+	rs := rules at: p ifAbsent: [Bag new: 0].
+	^ rs includes: target
+	 
+ManualVerifier>>pagesValid: ns forPage: p
+	"LHS numbers are prefixes, and by definition the pagesValid is everything to the left of the page"
+	"We look up p's rules and determine if anything on its RHS is in ns, as they should come -after- forPage"
+	"Returns the conflicting number, or nil if no conflict found"
+	| rp |
+	rp := rules at: p ifAbsent: [^ -1].
+	^ rp detect: [:r | ns includes: r] ifNone: [-1]
+
+parseRules: lines 
+	"creates a dictionary of the update rules"
+	| pg rl |
+	pg := '([0-9]+)' asRegex.
+	rl := Dictionary new.
+	lines do: [:l | | pr c | 
+		pr := pg matchesIn: l collect: [:m | m asInteger].
+		c := rl at: (pr at: 1) ifAbsentPut: [Bag new].
+		c add: (pr at: 2).
+		rl at: (pr at: 1) put: c.
+	].
+	^ rl
+
+ManualVerifier>>parseUpdate: line
+	"interprets the line of updates"
+	| pg |
+	pg := '([0-9]+)' asRegex.
+	^ pg matchesIn: line collect: [:m | m asInteger]
+
+ManualVerifier>>sortUpdate: ns
+	"reorders an update to conform to all rules"
+	^ ns sort: [:a :b | self order: a compareTo: b].
+
+ManualVerifier>>verifyUpdate: line
+	"determines if the line conforms to all rules, returns middle number on success or nil on fail"
+	| ups |
+	ups := self parseUpdate: line.
+	^ (1 to: ups size) 
+		detect: [:i | | v rs |
+			v := ups at: i.
+			rs := rules at: v ifAbsent: [OrderedCollection new: 0].
+			(self pagesValid: (ups first: (i - 1)) forPage: v) > -1
+		]
+		ifFound: [:v | ^ nil]
+		ifNone: [^ ups at: (((ups size) / 2) + 1) ]
+

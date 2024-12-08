@@ -1,0 +1,14 @@
+| lines |
+lines := AdventFileReader readLines: 'adventofcode/2024/day_five.txt'.
+splitIndex := lines indexOf: ''.
+ruleLines := lines first: splitIndex - 1.
+updateLines := lines allButFirst: splitIndex.
+mv := ManualVerifier new.
+mv initialize: ruleLines.
+broken := updateLines select: [:ul | 
+	(mv verifyUpdate: ul) isNil
+].
+broken inject: 0 into: [:acc :l | 
+	(mv fixUpdate: l) + acc	
+].
+
